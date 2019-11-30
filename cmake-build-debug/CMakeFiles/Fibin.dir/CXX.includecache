@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/mateuszdanowski/CLionProjects/Fibin/fibin.h
+type_traits
+-
+typeinfo
+-
+cstdio
+-
+
+/Users/mateuszdanowski/CLionProjects/Fibin/fibin_example.cc
+fibin.h
+/Users/mateuszdanowski/CLionProjects/Fibin/fibin.h
+cstdint
+-
+iostream
+-
+
