@@ -8,7 +8,7 @@
 template <unsigned int n>
 struct Fib
 {
-    static constexpr unsigned int value = Fib<n-1>::value + Fib<n-1>::value;
+    static constexpr unsigned int value = Fib<n-1>::value + Fib<n-2>::value;
 };
 
 template<>
@@ -78,4 +78,3 @@ struct Fibin {
         return Eval<T>::result::value;
     }
 };
-
