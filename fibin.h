@@ -67,6 +67,9 @@ struct Eval<If<Condition, Then, Else>> {
     result;
 };
 
+template <typename Term1, typename Term2, typename... Terms>
+struct Sum {};
+
 
 // Fibin class:
 template <typename ValueType>
