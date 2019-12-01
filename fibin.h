@@ -14,7 +14,7 @@ struct Fib
 template<>
 struct Fib<0>
 {
-    static const unsigned int value = 1;
+    static const unsigned int value = 0;
 };
 
 template<>
@@ -66,6 +66,15 @@ struct Eval<If<Condition, Then, Else>> {
             >::result
     result;
 };
+
+template <typename Term1, typename Term2, typename... Terms>
+struct Sum {};
+
+template <typename Arg>
+using Inc1 = Sum<Arg, Lit<Fib<1>>>;
+
+template <typename Arg>
+using Inc10 = Sum<Arg, Lit<Fib<10>>>;
 
 
 // Fibin class:
