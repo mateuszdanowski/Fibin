@@ -1,0 +1,53 @@
+* Literały Lit <--- DONE
+    Lit <Fib <n>>
+    Lit <True>, Lit <False>
+
+
+* Zmienne Var TODO
+    Var(const char*) - identyfikator zmiennej
+    długosc od 1 do 6 włącznie
+    dostępne znaki (a-zA-Z0-9)
+    małe i wielkie litery nierozroznialne (!)
+    np Var("A"), Var("01234"), Var("Cdefg")
+
+
+* Operacje arytmetyczne Sum, Inc1, Inc10 TODO
+    Sum<...> - variadic template, wynik to suma wszystkich argumentow, muszą byc minimum dwa
+    Inc1<Arg> - Arg + Fib<1>
+    Inc10<Arg> - Arg + Fib<10>
+
+
+* Porównanie Eq TODO
+    Eq<Left, Right> - zwraca True, gdy Left == Right, wpp False
+
+
+* Odwołanie do zmiennej Ref TODO
+    np Ref<Var("A")>
+
+
+* Wyrażenie Let TODO
+    Let<Var, Value, Expression> - przypisanie Value do Var i obliczenie Expression
+
+
+* Wyrażenie If <--- chyba zrobione, jeszcze nie wiem jak ze zmiennymi
+    If<Condition, Then, Else>
+
+
+* Wyrażenie Lambda TODO
+    Lambda<Var, Body> - funkcja z parametrem Var i ciałem Body
+
+
+* Wywołanie funkcji TODO
+    Invoke<Fun, Param> - obliczenie wartości funkcji Fun dla paramtetru Param
+
+
+* Klasa szablonowa Fibin<ValueType> <-- DONE
+
+
+* ValueType eval<Expr> TODO zabronic innym typom niz calkowitoliczbowe do niej dostep
+    Dostępna gdy ValueType jest typem liczbowym.
+    Oblicza w trakcie kompilacji wartość wyrażenia Expr i zwraca tę wartość.
+
+* void eval<Expr> TODO
+    Dostępna gdy ValueType NIE jest typem liczbowym.
+    Wyświetla informację, że Fibin nie wspiera danego typu.
