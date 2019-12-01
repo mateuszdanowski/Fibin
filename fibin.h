@@ -78,12 +78,21 @@ using Inc10 = Sum<Arg, Lit<Fib<10>>>;
 
 
 // Fibin class:
-template <typename ValueType>
+template <typename ValueType, bool = std::is_integral<ValueType>::value>
 struct Fibin {
 
     // Works for all ValueType (shouldn't for const char* etc)
-    template <typename T>
+    template <typename Expr>
+    constexpr static void eval() {
+        printf("Fibin doesn't support: %s\n", typeid(ValueType).name());
+    }
+};
+
+template <typename ValueType>
+struct Fibin<ValueType, true> {
+
+    template <typename Expr>
     constexpr static ValueType eval() {
-        return Eval<T>::result::value;
+        return Eval<Expr>::result::value;
     }
 };
