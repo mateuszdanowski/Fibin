@@ -14,7 +14,7 @@ struct Fib
 template<>
 struct Fib<0>
 {
-    static const unsigned int value = 1;
+    static const unsigned int value = 0;
 };
 
 template<>
