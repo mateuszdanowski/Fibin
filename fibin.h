@@ -183,14 +183,36 @@ struct Fibin<ValueType, true> {
     }
 };
 
-constexpr const char toLower(const char c) {
-    return 'A' <= c && c <= 'Z' ? c + 32 : c;
+constexpr char toLower(const char c) {
+    return ('A' <= c && c <= 'Z') ? (c + ('a'-'A')) : c;
 }
 
-// TODO: check for length and characters
-constexpr uint64_t Var(const char* name) {
+constexpr bool isCorrectChar(const char c) {
+    return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+}
+
+constexpr size_t getLen(const char* c) {
+    size_t len = 0;
+    while (c[len] != '\0') {
+        len++;
+    }
+    return len;
+}
+
+constexpr int64_t Var(const char* name) {
+    if (name == nullptr) {
+        throw "IncorrectVarName";
+    }
+    size_t len = getLen(name);
+    if (len < 1 || 6 < len) {
+        throw "IncorrectVarName";
+    }
+
     uint64_t hash = 1;
-    for (int i = 0; name[i] != '\0'; i++) {
+    for (int i = 0; i < len; i++) {
+        if (!isCorrectChar(name[i])) {
+            throw "IncorrectVarName";
+        }
         hash = hash * 137 + toLower(name[i]);
     }
     return hash;
