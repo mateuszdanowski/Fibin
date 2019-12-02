@@ -4,6 +4,10 @@
 #include <typeinfo>
 #include <cstdio>
 
+// A type for variable names:
+using var_t = uint64_t;
+
+
 // A type for Fibonacci numbers:
 template <unsigned int n>
 struct Fib
@@ -24,51 +28,134 @@ struct Fib<1>
 };
 
 
-// Booleans:
-struct True {};
-struct False {};
+// Syntax:
+template <typename T>
+struct Lit {};
 
+template <var_t Var>
+struct Ref {};
+
+template <var_t Var, typename Value, typename Expression>
+struct Let {};
+
+template <typename Fun, typename Param>
+struct Invoke {} ;
 
 template <typename Condition, typename Then, typename Else>
 struct If {};
 
-template <typename T>
-struct Lit {};
+template <var_t Var, typename Body>
+struct Lambda {};
 
-template <typename Expr>
-struct Eval {};
 
-// Literals evaluate to themselves:
-template <typename ValueType>
-struct Eval <Lit<ValueType>>
+// Environments:
+struct EmptyEnv;
+
+template <var_t Var, typename Value, typename Env>
+struct Binding {};
+
+template <var_t Var, typename Env>
+struct EnvLookup {};
+
+template <var_t Var>
+struct EnvLookup <Var, EmptyEnv> {};
+
+template <var_t Var, typename Value, typename Env>
+struct EnvLookup <Var, Binding<Var, Value, Env>>
 {
-    typedef ValueType result;
+    using result = Value;
+};
+
+template <var_t Var, var_t Var2, typename Value2, typename Env>
+struct EnvLookup <Var, Binding<Var2, Value2, Env>>
+{
+    using result = typename EnvLookup<Var, Env>::result;
 };
 
 
-// If true:
-template <typename Then, typename Else>
-struct Eval<If<True, Then, Else>> {
-    typedef typename Eval<Then>::result result;
+// Values:
+template <typename Lambda, typename Env>
+struct Closure {} ;
+
+struct True {};
+struct False {};
+
+
+// Eval:
+template <typename Expr, typename Env>
+struct Eval {} ;
+
+template <typename Proc, typename Value>
+struct Apply {} ;
+
+// Literals:
+template <typename T, typename Env>
+struct Eval <Lit<T>, Env>
+{
+    using result = T;
 };
 
-// If false:
-template <typename Then, typename Else>
-struct Eval<If<False, Then, Else>> {
-    typedef typename Eval<Else>::result result;
+// Variable references:
+template <var_t Var, typename Env>
+struct Eval <Ref<Var>, Env>
+{
+    using result = typename EnvLookup<Var, Env>::result;
 };
+
+// Lambdas:
+template <var_t Var, typename Body, typename Env>
+struct Eval <Lambda<Var,Body>, Env>
+{
+    using result = Closure<Lambda<Var, Body>, Env>;
+};
+
+template <typename Fun, typename Arg, typename Env>
+struct Eval<Invoke<Fun, Arg> , Env> {
+    typename Apply<typename Eval<Fun,Env> :: result ,
+            typename Eval<Arg,Env> :: result > :: result
+    typedef result ;
+} ;
+
+
+// Branch true:
+template <typename Then, typename Else, typename Env>
+struct Eval<If<True, Then, Else>, Env> {
+    using result = typename Eval<Then,Env> :: result;
+} ;
+
+// Branch false:
+template <typename Then, typename Else, typename Env>
+struct Eval<If<False, Then, Else>, Env> {
+    using result = typename Eval<Else,Env> :: result;
+} ;
 
 // Evaluate the condition:
-template <typename Condition, typename Then, typename Else>
-struct Eval<If<Condition, Then, Else>> {
-    typedef typename Eval<
-            If<typename Eval<Condition>::result, Then, Else>
-            >::result
-    result;
+template <typename Condition, typename Then, typename Else, typename Env>
+struct Eval<If<Condition, Then, Else>, Env> {
+    using result = typename Eval<If<typename Eval<Condition,Env> :: result, Then, Else>, Env> :: result;
+} ;
+
+// Let:
+template <var_t Var, typename Value, typename Expression, typename Env>
+struct Eval<Let <Var, Value, Expression>, Env> {
+    using result = typename Eval <Expression, Binding <Var, typename Eval<Value, Env>::result, Env>> :: result;
 };
 
+
+// Transition to the body of the lambda term inside the closure:
+template <var_t Name, typename Body, typename Env, typename Value>
+struct Apply<Closure<Lambda<Name,Body>, Env>, Value> {
+    typename Eval<Body, Binding<Name,Value,Env> > :: result
+    typedef result ;
+} ;
+
+
+// TODO
+// Addition:
 template <typename Term1, typename Term2, typename... Terms>
-struct Sum {};
+struct Sum {
+
+};
 
 template <typename Arg>
 using Inc1 = Sum<Arg, Lit<Fib<1>>>;
@@ -81,7 +168,6 @@ using Inc10 = Sum<Arg, Lit<Fib<10>>>;
 template <typename ValueType, bool = std::is_integral<ValueType>::value>
 struct Fibin {
 
-    // Works for all ValueType (shouldn't for const char* etc)
     template <typename Expr>
     constexpr static void eval() {
         printf("Fibin doesn't support: %s\n", typeid(ValueType).name());
@@ -93,6 +179,15 @@ struct Fibin<ValueType, true> {
 
     template <typename Expr>
     constexpr static ValueType eval() {
-        return Eval<Expr>::result::value;
+        return Eval<Expr, EmptyEnv>::result::value;
     }
 };
+
+// TODO: check for length and characters
+constexpr uint64_t Var(const char* name) {
+    uint64_t hash = 1;
+    for (int i = 0; name[i] != '\0'; i++) {
+        hash = hash * 137 + name[i];
+    }
+    return hash;
+}
