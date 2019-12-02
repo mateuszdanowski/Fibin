@@ -15,13 +15,13 @@ struct Fib
     static constexpr unsigned int value = Fib<n-1>::value + Fib<n-2>::value;
 };
 
-template<>
+template <>
 struct Fib<0>
 {
     static const unsigned int value = 0;
 };
 
-template<>
+template <>
 struct Fib<1>
 {
     static const unsigned int value = 1;
@@ -58,16 +58,16 @@ template <var_t Var, typename Env>
 struct EnvLookup {};
 
 template <var_t Var>
-struct EnvLookup <Var, EmptyEnv> {};
+struct EnvLookup<Var, EmptyEnv> {};
 
 template <var_t Var, typename Value, typename Env>
-struct EnvLookup <Var, Binding<Var, Value, Env>>
+struct EnvLookup<Var, Binding<Var, Value, Env>>
 {
     using result = Value;
 };
 
 template <var_t Var, var_t Var2, typename Value2, typename Env>
-struct EnvLookup <Var, Binding<Var2, Value2, Env>>
+struct EnvLookup<Var, Binding<Var2, Value2, Env>>
 {
     using result = typename EnvLookup<Var, Env>::result;
 };
@@ -75,7 +75,7 @@ struct EnvLookup <Var, Binding<Var2, Value2, Env>>
 
 // Values:
 template <typename Lambda, typename Env>
-struct Closure {} ;
+struct Closure {};
 
 struct True {};
 struct False {};
@@ -83,62 +83,70 @@ struct False {};
 
 // Eval:
 template <typename Expr, typename Env>
-struct Eval {} ;
+struct Eval {};
 
 template <typename Proc, typename Value>
-struct Apply {} ;
+struct Apply {};
 
 // Literals:
 template <typename T, typename Env>
-struct Eval <Lit<T>, Env>
+struct Eval<Lit<T>, Env>
 {
     using result = T;
 };
 
 // Variable references:
 template <var_t Var, typename Env>
-struct Eval <Ref<Var>, Env>
+struct Eval<Ref<Var>, Env>
 {
     using result = typename EnvLookup<Var, Env>::result;
 };
 
 // Lambdas:
 template <var_t Var, typename Body, typename Env>
-struct Eval <Lambda<Var,Body>, Env>
+struct Eval<Lambda<Var, Body>, Env>
 {
     using result = Closure<Lambda<Var, Body>, Env>;
 };
 
 template <typename Fun, typename Arg, typename Env>
-struct Eval<Invoke<Fun, Arg> , Env> {
-    typename Apply<typename Eval<Fun,Env> :: result ,
-            typename Eval<Arg,Env> :: result > :: result
-    typedef result ;
-} ;
-
+struct Eval<Invoke<Fun, Arg>, Env>
+{
+    using result = typename Apply<
+            typename Eval<Fun, Env>::result,
+            typename Eval<Arg, Env>::result>::result;
+};
 
 // Branch true:
 template <typename Then, typename Else, typename Env>
-struct Eval<If<True, Then, Else>, Env> {
-    using result = typename Eval<Then,Env> :: result;
-} ;
+struct Eval<If<True, Then, Else>, Env>
+{
+    using result = typename Eval<Then, Env>::result;
+};
 
 // Branch false:
 template <typename Then, typename Else, typename Env>
-struct Eval<If<False, Then, Else>, Env> {
-    using result = typename Eval<Else,Env> :: result;
-} ;
+struct Eval<If<False, Then, Else>, Env>
+{
+    using result = typename Eval<Else,Env>::result;
+};
 
 // Evaluate the condition:
 template <typename Condition, typename Then, typename Else, typename Env>
-struct Eval<If<Condition, Then, Else>, Env> {
-    using result = typename Eval<If<typename Eval<Condition,Env> :: result, Then, Else>, Env> :: result;
-} ;
+struct Eval<If<Condition, Then, Else>, Env>
+{
+    using result = typename Eval<
+            If<typename Eval<Condition, Env>::result, Then, Else>,
+            Env>::result;
+};
 
 // Let:
 template <var_t Var, typename Value, typename Expression, typename Env>
-struct Eval<Let <Var, Value, Expression>, Env> {
-    using result = typename Eval <Expression, Binding <Var, typename Eval<Value, Env>::result, Env>> :: result;
+struct Eval<Let<Var, Value, Expression>, Env>
+{
+    using result = typename Eval<
+            Expression,
+            Binding<Var, typename Eval<Value, Env>::result, Env>>::result;
 };
 
 
@@ -150,10 +158,13 @@ struct Apply<Closure<Lambda<Name,Body>, Env>, Value> {
 } ;
 
 
-// TODO
-// Addition:
+// Eq: TODO
+// ...
+
+// Addition: TODO
 template <typename Term1, typename Term2, typename... Terms>
-struct Sum {
+struct Sum
+{
 
 };
 
@@ -182,6 +193,7 @@ struct Fibin<ValueType, true> {
         return Eval<Expr, EmptyEnv>::result::value;
     }
 };
+
 
 constexpr char toLower(const char c) {
     return ('A' <= c && c <= 'Z') ? (c + ('a'-'A')) : c;
