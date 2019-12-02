@@ -183,11 +183,15 @@ struct Fibin<ValueType, true> {
     }
 };
 
+constexpr const char toLower(const char c) {
+    return 'A' <= c && c <= 'Z' ? c + 32 : c;
+}
+
 // TODO: check for length and characters
 constexpr uint64_t Var(const char* name) {
     uint64_t hash = 1;
     for (int i = 0; name[i] != '\0'; i++) {
-        hash = hash * 137 + name[i];
+        hash = hash * 137 + toLower(name[i]);
     }
     return hash;
 }
