@@ -13,19 +13,19 @@ using var_t = uint64_t;
 template <unsigned int n>
 struct Fib
 {
-    static constexpr unsigned int value = Fib<n-1>::value + Fib<n-2>::value;
+    enum { value = Fib<n-1>::value + Fib<n-2>::value };
 };
 
 template <>
 struct Fib<0>
 {
-    static const unsigned int value = 0;
+    enum { value = 0 };
 };
 
 template <>
 struct Fib<1>
 {
-    static const unsigned int value = 1;
+    enum { value = 1 };
 };
 
 
@@ -228,17 +228,17 @@ constexpr size_t getLen(const char* c) {
 
 constexpr var_t Var(const char* name) {
     if (name == nullptr) {
-        throw "IncorrectVarName";
+        //throw "IncorrectVarName";
     }
     size_t len = getLen(name);
     if (len < 1 || 6 < len) {
-        throw "IncorrectVarName";
+        //throw "IncorrectVarName";
     }
 
     var_t hash = 1;
     for (int i = 0; i < len; i++) {
         if (!isCorrectChar(name[i])) {
-            throw "IncorrectVarName";
+            //throw "IncorrectVarName";
         }
         hash = hash * 137 + toLower(name[i]);
     }
