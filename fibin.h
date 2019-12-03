@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <cstdio>
+#include <cstdint>
 
 // A type for variable names:
 using var_t = uint64_t;
@@ -161,7 +162,6 @@ struct Apply<Closure<Lambda<Name,Body>, Env>, Value> {
 // Eq: TODO
 // ...
 
-// Addition: TODO
 template <typename Term1, typename Term2, typename... Terms>
 struct Sum
 {
@@ -174,6 +174,19 @@ using Inc1 = Sum<Arg, Lit<Fib<1>>>;
 template <typename Arg>
 using Inc10 = Sum<Arg, Lit<Fib<10>>>;
 
+template <template <typename Term1, typename Term2, typename... Terms> class Sum, typename Env, typename Term1, typename Term2, typename... Terms>
+struct Eval<Sum<Term1, Term2, Terms...>, Env> {
+    struct result {
+        enum {value = Eval<Term1, Env>::result::value + Eval<Sum<Term2, Terms...>, Env>::result::value};
+    };
+};
+
+template <template <typename Term1, typename Term2, typename... Terms> class Sum, typename Env, typename Term1, typename Term2>
+struct Eval<Sum<Term1, Term2>, Env> {
+    struct result {
+        enum {value = Eval<Term1, Env>::result::value + Eval<Term2, Env>::result::value};
+    };
+};
 
 // Fibin class:
 template <typename ValueType, bool = std::is_integral<ValueType>::value>
