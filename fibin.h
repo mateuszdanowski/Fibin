@@ -159,7 +159,7 @@ struct Apply<Closure<Lambda<Name,Body>, Env>, Value> {
 } ;
 
 
-// Eq: TODO
+// Eq: TODO testing
 template <typename LHS, typename RHS>
 struct Eq {
 
