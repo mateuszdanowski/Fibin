@@ -160,7 +160,32 @@ struct Apply<Closure<Lambda<Name,Body>, Env>, Value> {
 
 
 // Eq: TODO
-// ...
+template <typename LHS, typename RHS>
+struct Eq {
+
+};
+
+template <bool logicalValue>
+struct EvalHelp {
+
+};
+
+template <>
+struct EvalHelp<true> {
+    using result = True;
+};
+
+template <>
+struct EvalHelp<false> {
+    using result = False;
+};
+
+template <typename LHS, typename RHS, typename Env>
+struct Eval<Eq<LHS, RHS>, Env> {
+    using result = typename EvalHelp<(Eval<LHS, Env>::result::value == Eval<RHS, Env>::result::value)>::result;
+};
+
+
 
 template <typename Term1, typename Term2, typename... Terms>
 struct Sum
