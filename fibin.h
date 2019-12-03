@@ -200,7 +200,9 @@ constexpr char toLower(const char c) {
 }
 
 constexpr bool isCorrectChar(const char c) {
-    return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+    return ('0' <= c && c <= '9') ||
+           ('a' <= c && c <= 'z') ||
+           ('A' <= c && c <= 'Z');
 }
 
 constexpr size_t getLen(const char* c) {
@@ -211,7 +213,7 @@ constexpr size_t getLen(const char* c) {
     return len;
 }
 
-constexpr int64_t Var(const char* name) {
+constexpr var_t Var(const char* name) {
     if (name == nullptr) {
         throw "IncorrectVarName";
     }
@@ -220,7 +222,7 @@ constexpr int64_t Var(const char* name) {
         throw "IncorrectVarName";
     }
 
-    uint64_t hash = 1;
+    var_t hash = 1;
     for (int i = 0; i < len; i++) {
         if (!isCorrectChar(name[i])) {
             throw "IncorrectVarName";
