@@ -1,6 +1,7 @@
 #include "fibin.h"
 #include <cstdint>
 #include <iostream>
+#include "testowanie.h"
 using namespace std;
 
 int main() {
@@ -179,6 +180,19 @@ int main() {
             >
     >>();
     assert(f4 == 0);
+
+    // 5 : 5
+    // 32 : 2178309
+    int8_t a1 = Fibin<int8_t>::eval<Lit<Fib<5>>>();
+    int8_t b1 = Fibin<int8_t>::eval<Lit<Fib<32>>>();
+
+    // Tu jest git, powinny byc rowne
+    cout << int(a1) << " " << int(b1) << endl;
+
+
+    // Tu się psuje, powinno byc True i wypisac 55
+    cout << int(Fibin<uint8_t>::eval<If< Eq<Lit<Fib<32>>, Lit<Fib<5>>>, Lit<Fib<10>>, Lit<Fib<11>> >>()) << endl;
+    //static_assert(Fibin<uint8_t>::eval<If< Eq<L<32>, L<5>>, L<10>, L<11> >>() == 55);
 
     std::cout << "All tests passed!" << std::endl;
 }
