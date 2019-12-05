@@ -35,7 +35,7 @@ int main() {
 //    //Var("a b c");
 //    //Var(nullptr);
 
-    static_assert(55 == Eval<Lit<Fib<10>>, EmptyEnv>::result::value);
+//    static_assert(55 == Eval<Lit<Fib<10>>, EmptyEnv>::result::value);
     static_assert(55 == Fibin<int>::eval<Lit<Fib<10>>>());
 
 //    Fibin<const char*>;
@@ -80,13 +80,13 @@ int main() {
     constexpr int b = Fibin<int>::eval<Invoke<Lambda<Var("x"), Ref<Var("x")> >, Lit<Fib<3>>>>();
     static_assert(a == 0 && b == 2);
 
-    static_assert(2 == Eval<Invoke<Lambda<Var("X"), Ref<Var("X")> >, Lit<Fib<3> > >, EmptyEnv>::result::value);
+//    static_assert(2 == Eval<Invoke<Lambda<Var("X"), Ref<Var("X")> >, Lit<Fib<3> > >, EmptyEnv>::result::value);
 
 
 
     // Testing (if false 0 1):
-    int y = Eval<If<Lit<False>, Lit<Fib<0>>, Lit<Fib<1> > >, EmptyEnv>::result::value;
-    assert(y == 1);
+//    int y = Eval<If<Lit<False>, Lit<Fib<0>>, Lit<Fib<1> > >, EmptyEnv>::result::value;
+//    assert(y == 1);
 
 
     // Testing case-sensitivity
@@ -187,12 +187,33 @@ int main() {
     int8_t b1 = Fibin<int8_t>::eval<Lit<Fib<32>>>();
 
     // Tu jest git, powinny byc rowne
-    cout << int(a1) << " " << int(b1) << endl;
+    //cout << int(a1) << " " << int(b1) << endl;
 
 
     // Tu się psuje, powinno byc True i wypisac 55
-    cout << int(Fibin<uint8_t>::eval<If< Eq<Lit<Fib<32>>, Lit<Fib<5>>>, Lit<Fib<10>>, Lit<Fib<11>> >>()) << endl;
-    //static_assert(Fibin<uint8_t>::eval<If< Eq<L<32>, L<5>>, L<10>, L<11> >>() == 55);
+    //cout << int(Fibin<uint8_t>::eval<If< Eq<Lit<Fib<32>>, Lit<Fib<5>>>, Lit<Fib<10>>, Lit<Fib<11>> >>()) << endl;
+    static_assert(Fibin<uint8_t>::eval<If< Eq<L<32>, L<5>>, L<10>, L<11> >>() == 55);
+
+    // TODO: naprawić
+//    int test = Fibin<int>::eval<
+//    Let<
+//            Var("f"),
+//            Lambda<
+//                    Var("x"),
+//                    Ref<Var("x")>
+//            >,
+//            If<
+//                    Eq<
+//                            Ref<Var("f")>,
+//                            Ref<Var("F")>
+//                    >,
+//                    //Invoke<Ref<Var("f")>, Lit<False>>,
+//                    Lit<Fib<10>>,
+//                    Lit<Fib<11>>
+//            >
+//    >>();
+//
+//    static_assert(55 == test);
 
     std::cout << "All tests passed!" << std::endl;
 }
