@@ -142,7 +142,8 @@ struct Eval<If<Condition, Then, Else>, Env, ValueType>
 {
     using result = typename Eval<
             If<typename Eval<Condition, Env, ValueType>::result, Then, Else>,
-            Env, ValueType>::result;
+            Env,
+            ValueType>::result;
 };
 
 // Let:
@@ -155,6 +156,7 @@ struct Eval<Let<Var, Value, Expression>, Env, ValueType>
             Binding<Var, typename Eval<Value, Env, ValueType>::result, Env>,
             ValueType>::result;
 };
+
 
 // Transition to the body of the lambda term inside the closure:
 template <var_t Name, typename Body, typename Env, typename Value,
@@ -173,22 +175,22 @@ template <typename LHS, typename RHS>
 struct Eq {};
 
 template <bool logicalValue>
-struct EvalHelp {};
+struct EqHelp {};
 
 template <>
-struct EvalHelp<true> {
+struct EqHelp<true> {
     using result = True;
 };
 
 template <>
-struct EvalHelp<false> {
+struct EqHelp<false> {
     using result = False;
 };
 
 template <typename LHS, typename RHS, typename Env, typename ValueType>
 struct Eval<Eq<LHS, RHS>, Env, ValueType>
 {
-    using result = typename EvalHelp<
+    using result = typename EqHelp<
             static_cast<ValueType>
             (Eval<LHS, Env, ValueType>::result::value) ==
             static_cast<ValueType>
@@ -250,7 +252,7 @@ struct Fibin<ValueType, true> {
 
     template <typename Expr>
     constexpr static ValueType eval() {
-        return Eval<Expr, EmptyEnv, ValueType>::result::value;
+        return static_cast<ValueType>(Eval<Expr, EmptyEnv, ValueType>::result::value);
     }
 };
 
