@@ -86,6 +86,7 @@ struct False {};
 template <typename Expr, typename Env, typename ValueType>
 struct Eval {};
 
+// Apply:
 template <typename Proc, typename Value, typename ValueType>
 struct Apply {};
 
@@ -110,6 +111,7 @@ struct Eval<Lambda<Var, Body>, Env, ValueType>
     using result = Closure<Lambda<Var, Body>, Env>;
 };
 
+// Invokes:
 template <typename Fun, typename Arg, typename Env, typename ValueType>
 struct Eval<Invoke<Fun, Arg>, Env, ValueType>
 {
@@ -134,7 +136,8 @@ struct Eval<If<False, Then, Else>, Env, ValueType>
 };
 
 // Evaluate the condition:
-template <typename Condition, typename Then, typename Else, typename Env, typename ValueType>
+template <typename Condition, typename Then, typename Else,
+          typename Env, typename ValueType>
 struct Eval<If<Condition, Then, Else>, Env, ValueType>
 {
     using result = typename Eval<
@@ -143,31 +146,34 @@ struct Eval<If<Condition, Then, Else>, Env, ValueType>
 };
 
 // Let:
-template <var_t Var, typename Value, typename Expression, typename Env, typename ValueType>
+template <var_t Var, typename Value, typename Expression,
+          typename Env, typename ValueType>
 struct Eval<Let<Var, Value, Expression>, Env, ValueType>
 {
     using result = typename Eval<
             Expression,
-            Binding<Var, typename Eval<Value, Env, ValueType>::result, Env>, ValueType>::result;
+            Binding<Var, typename Eval<Value, Env, ValueType>::result, Env>,
+            ValueType>::result;
 };
 
-
 // Transition to the body of the lambda term inside the closure:
-template <var_t Name, typename Body, typename Env, typename Value, typename ValueType>
-struct Apply<Closure<Lambda<Name, Body>, Env>, Value, ValueType> {
-    typename Eval<Body, Binding<Name, Value, Env>, ValueType> :: result
-    typedef result ;
+template <var_t Name, typename Body, typename Env, typename Value,
+          typename ValueType>
+struct Apply<Closure<Lambda<Name, Body>, Env>, Value, ValueType>
+{
+    using result = typename Eval<
+            Body,
+            Binding<Name, Value, Env>,
+            ValueType>::result;
 } ;
 
 
-// Eq: TODO testing
+// Eq
 template <typename LHS, typename RHS>
 struct Eq {};
 
 template <bool logicalValue>
-struct EvalHelp {
-
-};
+struct EvalHelp {};
 
 template <>
 struct EvalHelp<true> {
@@ -180,12 +186,18 @@ struct EvalHelp<false> {
 };
 
 template <typename LHS, typename RHS, typename Env, typename ValueType>
-struct Eval<Eq<LHS, RHS>, Env, ValueType> {
-    using result = typename EvalHelp<(static_cast<ValueType>(Eval<LHS, Env, ValueType>::result::value) == static_cast<ValueType>(Eval<RHS, Env, ValueType>::result::value))>::result;
+struct Eval<Eq<LHS, RHS>, Env, ValueType>
+{
+    using result = typename EvalHelp<
+            static_cast<ValueType>
+            (Eval<LHS, Env, ValueType>::result::value) ==
+            static_cast<ValueType>
+            (Eval<RHS, Env, ValueType>::result::value)
+            >::result;
 };
 
 
-
+// Addition:
 template <typename Term1, typename Term2, typename... Terms>
 struct Sum {};
 
@@ -195,19 +207,33 @@ using Inc1 = Sum<Arg, Lit<Fib<1>>>;
 template <typename Arg>
 using Inc10 = Sum<Arg, Lit<Fib<10>>>;
 
-template <template <typename Term1, typename Term2, typename... Terms> class Sum, typename Env, typename Term1, typename Term2, typename... Terms, typename ValueType>
-struct Eval<Sum<Term1, Term2, Terms...>, Env, ValueType> {
-    struct result {
-        enum {value = Eval<Term1, Env, ValueType>::result::value + Eval<Sum<Term2, Terms...>, Env, ValueType>::result::value};
+template <template <typename Term1, typename Term2, typename... Terms> class Sum,
+          typename Env, typename Term1, typename Term2, typename... Terms,
+          typename ValueType>
+struct Eval<Sum<Term1, Term2, Terms...>, Env, ValueType>
+{
+    struct result
+    {
+        enum {
+            value = Eval<Term1, Env, ValueType>::result::value +
+                    Eval<Sum<Term2, Terms...>, Env, ValueType>::result::value
+        };
     };
 };
 
-template <template <typename Term1, typename Term2, typename... Terms> class Sum, typename Env, typename Term1, typename Term2, typename ValueType>
-struct Eval<Sum<Term1, Term2>, Env, ValueType> {
-    struct result {
-        enum {value = Eval<Term1, Env, ValueType>::result::value + Eval<Term2, Env, ValueType>::result::value};
+template <template <typename Term1, typename Term2, typename... Terms> class Sum,
+          typename Env, typename Term1, typename Term2, typename ValueType>
+struct Eval<Sum<Term1, Term2>, Env, ValueType>
+{
+    struct result
+    {
+        enum {
+            value = Eval<Term1, Env, ValueType>::result::value +
+                    Eval<Term2, Env, ValueType>::result::value
+        };
     };
 };
+
 
 // Fibin class:
 template <typename ValueType, bool = std::is_integral<ValueType>::value>
@@ -229,39 +255,43 @@ struct Fibin<ValueType, true> {
 };
 
 
-constexpr char toLower(const char c) {
-    return ('A' <= c && c <= 'Z') ? (c + ('a'-'A')) : c;
-}
+namespace details {
 
-constexpr bool isCorrectChar(const char c) {
-    return ('0' <= c && c <= '9') ||
-           ('a' <= c && c <= 'z') ||
-           ('A' <= c && c <= 'Z');
-}
-
-constexpr size_t getLen(const char* c) {
-    size_t len = 0;
-    while (c[len] != '\0') {
-        len++;
+    constexpr char toLower(const char c) {
+        return ('A' <= c && c <= 'Z') ? (c + ('a' - 'A')) : c;
     }
-    return len;
+
+    constexpr bool isCorrectChar(const char c) {
+        return ('0' <= c && c <= '9') ||
+               ('a' <= c && c <= 'z') ||
+               ('A' <= c && c <= 'Z');
+    }
+
+    constexpr size_t getLen(const char *c) {
+        size_t len = 0;
+        while (c[len] != '\0') {
+            len++;
+        }
+        return len;
+    }
 }
 
+// Variables:
 constexpr var_t Var(const char* name) {
     if (name == nullptr) {
         throw "IncorrectVarName";
     }
-    size_t len = getLen(name);
+    size_t len = details::getLen(name);
     if (len < 1 || 6 < len) {
         throw "IncorrectVarName";
     }
 
     var_t hash = 1;
     for (int i = 0; i < len; i++) {
-        if (!isCorrectChar(name[i])) {
+        if (!details::isCorrectChar(name[i])) {
             throw "IncorrectVarName";
         }
-        hash = hash * 137 + toLower(name[i]);
+        hash = hash * 137 + details::toLower(name[i]);
     }
     return hash;
 }
