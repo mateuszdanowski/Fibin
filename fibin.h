@@ -83,87 +83,86 @@ struct False {};
 
 
 // Eval:
-template <typename Expr, typename Env>
+template <typename Expr, typename Env, typename ValueType>
 struct Eval {};
 
-template <typename Proc, typename Value>
+template <typename Proc, typename Value, typename ValueType>
 struct Apply {};
 
 // Literals:
-template <typename T, typename Env>
-struct Eval<Lit<T>, Env>
+template <typename T, typename Env, typename ValueType>
+struct Eval<Lit<T>, Env, ValueType>
 {
     using result = T;
 };
 
 // Variable references:
-template <var_t Var, typename Env>
-struct Eval<Ref<Var>, Env>
+template <var_t Var, typename Env, typename ValueType>
+struct Eval<Ref<Var>, Env, ValueType>
 {
     using result = typename EnvLookup<Var, Env>::result;
 };
 
 // Lambdas:
-template <var_t Var, typename Body, typename Env>
-struct Eval<Lambda<Var, Body>, Env>
+template <var_t Var, typename Body, typename Env, typename ValueType>
+struct Eval<Lambda<Var, Body>, Env, ValueType>
 {
     using result = Closure<Lambda<Var, Body>, Env>;
 };
 
-template <typename Fun, typename Arg, typename Env>
-struct Eval<Invoke<Fun, Arg>, Env>
+template <typename Fun, typename Arg, typename Env, typename ValueType>
+struct Eval<Invoke<Fun, Arg>, Env, ValueType>
 {
     using result = typename Apply<
-            typename Eval<Fun, Env>::result,
-            typename Eval<Arg, Env>::result>::result;
+            typename Eval<Fun, Env, ValueType>::result,
+            typename Eval<Arg, Env, ValueType>::result,
+            ValueType>::result;
 };
 
 // Branch true:
-template <typename Then, typename Else, typename Env>
-struct Eval<If<True, Then, Else>, Env>
+template <typename Then, typename Else, typename Env, typename ValueType>
+struct Eval<If<True, Then, Else>, Env, ValueType>
 {
-    using result = typename Eval<Then, Env>::result;
+    using result = typename Eval<Then, Env, ValueType>::result;
 };
 
 // Branch false:
-template <typename Then, typename Else, typename Env>
-struct Eval<If<False, Then, Else>, Env>
+template <typename Then, typename Else, typename Env, typename ValueType>
+struct Eval<If<False, Then, Else>, Env, ValueType>
 {
-    using result = typename Eval<Else,Env>::result;
+    using result = typename Eval<Else, Env, ValueType>::result;
 };
 
 // Evaluate the condition:
-template <typename Condition, typename Then, typename Else, typename Env>
-struct Eval<If<Condition, Then, Else>, Env>
+template <typename Condition, typename Then, typename Else, typename Env, typename ValueType>
+struct Eval<If<Condition, Then, Else>, Env, ValueType>
 {
     using result = typename Eval<
-            If<typename Eval<Condition, Env>::result, Then, Else>,
-            Env>::result;
+            If<typename Eval<Condition, Env, ValueType>::result, Then, Else>,
+            Env, ValueType>::result;
 };
 
 // Let:
-template <var_t Var, typename Value, typename Expression, typename Env>
-struct Eval<Let<Var, Value, Expression>, Env>
+template <var_t Var, typename Value, typename Expression, typename Env, typename ValueType>
+struct Eval<Let<Var, Value, Expression>, Env, ValueType>
 {
     using result = typename Eval<
             Expression,
-            Binding<Var, typename Eval<Value, Env>::result, Env>>::result;
+            Binding<Var, typename Eval<Value, Env, ValueType>::result, Env>, ValueType>::result;
 };
 
 
 // Transition to the body of the lambda term inside the closure:
-template <var_t Name, typename Body, typename Env, typename Value>
-struct Apply<Closure<Lambda<Name,Body>, Env>, Value> {
-    typename Eval<Body, Binding<Name,Value,Env> > :: result
+template <var_t Name, typename Body, typename Env, typename Value, typename ValueType>
+struct Apply<Closure<Lambda<Name, Body>, Env>, Value, ValueType> {
+    typename Eval<Body, Binding<Name, Value, Env>, ValueType> :: result
     typedef result ;
 } ;
 
 
 // Eq: TODO testing
 template <typename LHS, typename RHS>
-struct Eq {
-
-};
+struct Eq {};
 
 template <bool logicalValue>
 struct EvalHelp {
@@ -180,18 +179,15 @@ struct EvalHelp<false> {
     using result = False;
 };
 
-template <typename LHS, typename RHS, typename Env>
-struct Eval<Eq<LHS, RHS>, Env> {
-    using result = typename EvalHelp<(Eval<LHS, Env>::result::value == Eval<RHS, Env>::result::value)>::result;
+template <typename LHS, typename RHS, typename Env, typename ValueType>
+struct Eval<Eq<LHS, RHS>, Env, ValueType> {
+    using result = typename EvalHelp<(static_cast<ValueType>(Eval<LHS, Env, ValueType>::result::value) == static_cast<ValueType>(Eval<RHS, Env, ValueType>::result::value))>::result;
 };
 
 
 
 template <typename Term1, typename Term2, typename... Terms>
-struct Sum
-{
-
-};
+struct Sum {};
 
 template <typename Arg>
 using Inc1 = Sum<Arg, Lit<Fib<1>>>;
@@ -199,17 +195,17 @@ using Inc1 = Sum<Arg, Lit<Fib<1>>>;
 template <typename Arg>
 using Inc10 = Sum<Arg, Lit<Fib<10>>>;
 
-template <template <typename Term1, typename Term2, typename... Terms> class Sum, typename Env, typename Term1, typename Term2, typename... Terms>
-struct Eval<Sum<Term1, Term2, Terms...>, Env> {
+template <template <typename Term1, typename Term2, typename... Terms> class Sum, typename Env, typename Term1, typename Term2, typename... Terms, typename ValueType>
+struct Eval<Sum<Term1, Term2, Terms...>, Env, ValueType> {
     struct result {
-        enum {value = Eval<Term1, Env>::result::value + Eval<Sum<Term2, Terms...>, Env>::result::value};
+        enum {value = Eval<Term1, Env, ValueType>::result::value + Eval<Sum<Term2, Terms...>, Env, ValueType>::result::value};
     };
 };
 
-template <template <typename Term1, typename Term2, typename... Terms> class Sum, typename Env, typename Term1, typename Term2>
-struct Eval<Sum<Term1, Term2>, Env> {
+template <template <typename Term1, typename Term2, typename... Terms> class Sum, typename Env, typename Term1, typename Term2, typename ValueType>
+struct Eval<Sum<Term1, Term2>, Env, ValueType> {
     struct result {
-        enum {value = Eval<Term1, Env>::result::value + Eval<Term2, Env>::result::value};
+        enum {value = Eval<Term1, Env, ValueType>::result::value + Eval<Term2, Env, ValueType>::result::value};
     };
 };
 
@@ -228,7 +224,7 @@ struct Fibin<ValueType, true> {
 
     template <typename Expr>
     constexpr static ValueType eval() {
-        return Eval<Expr, EmptyEnv>::result::value;
+        return Eval<Expr, EmptyEnv, ValueType>::result::value;
     }
 };
 
@@ -253,17 +249,17 @@ constexpr size_t getLen(const char* c) {
 
 constexpr var_t Var(const char* name) {
     if (name == nullptr) {
-        //throw "IncorrectVarName";
+        throw "IncorrectVarName";
     }
     size_t len = getLen(name);
     if (len < 1 || 6 < len) {
-        //throw "IncorrectVarName";
+        throw "IncorrectVarName";
     }
 
     var_t hash = 1;
     for (int i = 0; i < len; i++) {
         if (!isCorrectChar(name[i])) {
-            //throw "IncorrectVarName";
+            throw "IncorrectVarName";
         }
         hash = hash * 137 + toLower(name[i]);
     }
