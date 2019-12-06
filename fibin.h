@@ -40,7 +40,7 @@ template <var_t Var, typename Value, typename Expression>
 struct Let {};
 
 template <typename Fun, typename Param>
-struct Invoke {} ;
+struct Invoke {};
 
 template <typename Condition, typename Then, typename Else>
 struct If {};
@@ -170,7 +170,7 @@ struct Apply<Closure<Lambda<Name, Body>, Env>, Value, ValueType>
 } ;
 
 
-// Eq
+// Equality:
 template <typename LHS, typename RHS>
 struct Eq {};
 
@@ -191,11 +191,9 @@ template <typename LHS, typename RHS, typename Env, typename ValueType>
 struct Eval<Eq<LHS, RHS>, Env, ValueType>
 {
     using result = typename EqHelp<
-            static_cast<ValueType>
-            (Eval<LHS, Env, ValueType>::result::value) ==
-            static_cast<ValueType>
-            (Eval<RHS, Env, ValueType>::result::value)
-            >::result;
+            static_cast<ValueType>(Eval<LHS, Env, ValueType>::result::value) ==
+            static_cast<ValueType>(Eval<RHS, Env, ValueType>::result::value)
+    >::result;
 };
 
 
@@ -291,7 +289,7 @@ constexpr var_t Var(const char* name) {
     }
 
     var_t hash = 1;
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         if (!details::isCorrectChar(name[i])) {
             throw "IncorrectVarName";
         }
