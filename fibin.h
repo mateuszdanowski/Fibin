@@ -252,7 +252,8 @@ struct Fibin<ValueType, true> {
 
     template <typename Expr>
     constexpr static ValueType eval() {
-        return static_cast<ValueType>(Eval<Expr, EmptyEnv, ValueType>::result::value);
+        return static_cast<ValueType>
+            (Eval<Expr, EmptyEnv, ValueType>::result::value);
     }
 };
 
@@ -260,7 +261,8 @@ struct Fibin<ValueType, true> {
 namespace details {
 
     constexpr char toLower(const char c) {
-        return ('A' <= c && c <= 'Z') ? (c + ('a' - 'A')) : c;
+        return ('A' <= c && c <= 'Z') ?
+                static_cast<char>(c + ('a' - 'A')) : c;
     }
 
     constexpr bool isCorrectChar(const char c) {
