@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FIBIN_H__
+#define __FIBIN_H__
 
 #include <type_traits>
 #include <typeinfo>
@@ -90,6 +91,7 @@ struct Eval {};
 template <typename Proc, typename Value, typename ValueType>
 struct Apply {};
 
+
 // Literals:
 template <typename T, typename Env, typename ValueType>
 struct Eval<Lit<T>, Env, ValueType>
@@ -159,13 +161,13 @@ struct Eval<Let<Var, Value, Expression>, Env, ValueType>
 
 
 // Transition to the body of the lambda term inside the closure:
-template <var_t Name, typename Body, typename Env, typename Value,
+template <var_t Var, typename Body, typename Env, typename Value,
           typename ValueType>
-struct Apply<Closure<Lambda<Name, Body>, Env>, Value, ValueType>
+struct Apply<Closure<Lambda<Var, Body>, Env>, Value, ValueType>
 {
     using result = typename Eval<
             Body,
-            Binding<Name, Value, Env>,
+            Binding<Var, Value, Env>,
             ValueType>::result;
 } ;
 
@@ -297,3 +299,5 @@ constexpr var_t Var(const char* name) {
     }
     return hash;
 }
+
+#endif // __FIBIN_H__
